@@ -1,0 +1,55 @@
+=pod
+
+=head1 NAME
+
+Etcd::Lock - Lock based on etcd
+
+=for html <p>
+    <a href="https://github.com/emilianobruni/etcd-lock/actions/workflows/test.yml">
+        <img alt="github workflow tests" src="https://github.com/emilianobruni/etcd-lock/actions/workflows/test.yml/badge.svg">
+    </a>
+    <img alt="Top language: " src="https://img.shields.io/github/languages/top/emilianobruni/etcd-lock">
+    <img alt="github last commit" src="https://img.shields.io/github/last-commit/emilianobruni/etcd-lock">
+</p>
+
+=head1 VERSION
+
+version 0.01
+
+=head1 SYNOPSIS
+
+  use Etcd::Lock
+
+  my $etcdLock = Etcd::Lock->new(host => 'host.name.com', key => 'lock_key');
+
+=head1 DESCRIPTION
+
+Etcd::Lock is a lock based on etcd
+
+=encoding UTF-8
+
+=head1 BUGS/CONTRIBUTING
+
+Please report any bugs through the web interface at L<https://github.com/EmilianoBruni/etcd-lock/issues>
+
+If you want to contribute changes or otherwise involve yourself in development, feel free to fork the Git repository from
+L<https://github.com/EmilianoBruni/etcd-lock/>.
+
+=head1 SUPPORT
+
+You can find this documentation with the perldoc command too.
+
+    perldoc etcd-lock
+
+=head1 AUTHOR
+
+Emiliano Bruni <info@ebruni.it>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2022 by Emiliano Bruni.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
