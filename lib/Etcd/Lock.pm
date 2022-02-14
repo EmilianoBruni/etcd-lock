@@ -1,19 +1,19 @@
 package Etcd::Lock;
 
-use strict;
-use warnings;
+use 5.012;
 
 use Net::Etcd;
 use boolean;
 
 sub new {
-    my ( $c, $a ) = @_;
-    my $b = {};
-    $b->{etcd} = Net::Etcd->new( { host => $a->{host} } );
-    foreach qw(host, key) {
-        $b->{$_} = $a->{$_};
+    my $c = shift;
+    my %a = @_;
+    my %b;
+    $b{etcd} = Net::Etcd->new( { host => $a{host} } );
+    foreach (qw/host key/) {
+        $b{$_} = $a{$_};
     }
-    return bless $b, $c;
+    return bless \%b, $c;
 }
 
 sub lock () {
@@ -31,12 +31,12 @@ sub _lock_unlock ( ) {
     my $nval = shift;
     my $k = $s->{key};
 
-    my $val = $s->etcd->range( { key => $k } )->get_value;
+    my $val = $s->{etcd}->range( { key => $k } )->get_value;
     return $val unless defined $nval;
     return false if defined $val && $val eq $nval;
     $nval
-      ? $s->etcd->put( { key => $k, value => $nval } )
-      : $s->etcd->deleterange( { key => $k } );
+      ? $s->{etcd}->put( { key => $k, value => $nval } )
+      : $s->{etcd}->deleterange( { key => $k } );
     return true;
 }
 
