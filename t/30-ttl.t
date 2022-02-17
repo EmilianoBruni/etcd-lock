@@ -3,8 +3,6 @@ use Test::Fork;
 use Etcd::Lock;
 use boolean;
 
-use DDP;
-
 plan skip_all => 'set TEST_ETCD to enable this test' unless $ENV{TEST_ETCD};
 
 my $lu = new Etcd::Lock( host => $ENV{TEST_ETCD}, key => $$ . time );
