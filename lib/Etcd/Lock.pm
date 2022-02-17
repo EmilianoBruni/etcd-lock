@@ -10,34 +10,53 @@ sub new {
     my %a = @_;
     my %b;
     $b{etcd} = Net::Etcd->new( { host => $a{host} } );
-    foreach (qw/host key/) {
-        $b{$_} = $a{$_};
+    $b{ttl}  = 3600;
+    foreach (qw/host key ttl/) {
+        $b{$_} = $a{$_} if (exists $a{$_});
     }
     return bless \%b, $c;
 }
 
-sub lock () {
+sub lock {
     my $s = shift;
-    return $s->_lock_unlock( true );
+    return $s->_lock_unlock(true);
 }
 
-sub unlock () {
-    my $s = shift;;
-    return $s->_lock_unlock( false );
+sub unlock {
+    my $s = shift;
+    return $s->_lock_unlock(false);
+}
+
+sub ttl {
+    my $s = shift;
+    $s->{ttl} = shift if @_;
+    return $s->{ttl};
 }
 
 sub _lock_unlock ( ) {
-    my $s = shift;
+    my $s    = shift;
     my $nval = shift;
-    my $k = $s->{key};
+    my $k    = $s->{key};
 
     my $val = $s->{etcd}->range( { key => $k } )->get_value;
     return $val unless defined $nval;
     return false if defined $val && $val eq $nval;
-    $nval
-      ? $s->{etcd}->put( { key => $k, value => $nval } )
-      : $s->{etcd}->deleterange( { key => $k } );
+    my $lid = $s->_lease_id;
+    if ($nval) {
+        $s->{etcd}->lease( { ID => $lid, TTL => $s->{ttl} } )->grant;
+        $s->{etcd}->put( { key => $k, value => $nval, lease => $lid } );
+    }
+    else {
+        $s->{etcd}->deleterange( { key => $k } );
+        $s->{etcd}->lease( { ID => $lid } )->revoke;
+    }
     return true;
+}
+
+sub _lease_id {
+    my $s = shift;
+    state $leased_id //= $$ . time;
+    return $leased_id;
 }
 
 1;
@@ -71,11 +90,30 @@ __END__
   use Etcd::Lock
 
   my $etcdLock = Etcd::Lock->new(host => 'host.name.com', key => 'lock_key');
+  $etcdLock->lock();
+  ... do_something ...
+  $etcdLock->unlock();
 
 
 =head1 DESCRIPTION
 
-Etcd::Lock is a lock based on etcd
+Etcd::Lock is a lock based on etcd. When a key is locked, try to lock same key
+return false. Key is unlocked automatically when ttl seconds expired.
+
+=head1 METHODS
+
+=head2 lock()
+
+Return true if key is unlocked. Now it's locked.
+
+=head2 unlock()
+
+Return true if key is locked. Now it's unlocked
+
+=head2 ttl(new_ttl)
+
+Set or return after how many seconds a lock is automatically removed.
+Defaul: 3600.
 
 =head1 BUGS/CONTRIBUTING
 
