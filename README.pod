@@ -14,19 +14,38 @@ Etcd::Lock - Lock based on etcd
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =head1 SYNOPSIS
 
   use Etcd::Lock
 
   my $etcdLock = Etcd::Lock->new(host => 'host.name.com', key => 'lock_key');
+  $etcdLock->lock();
+  ... do_something ...
+  $etcdLock->unlock();
 
 =head1 DESCRIPTION
 
-Etcd::Lock is a lock based on etcd
+Etcd::Lock is a lock based on etcd. When a key is locked, try to lock same key
+return false. Key is unlocked automatically when ttl seconds expired.
 
 =encoding UTF-8
+
+=head1 METHODS
+
+=head2 lock()
+
+Return true if key is unlocked. Now it's locked.
+
+=head2 unlock()
+
+Return true if key is locked. Now it's unlocked
+
+=head2 ttl(new_ttl)
+
+Set or return after how many seconds a lock is automatically removed.
+Defaul: 3600.
 
 =head1 BUGS/CONTRIBUTING
 
